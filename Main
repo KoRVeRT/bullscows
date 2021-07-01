@@ -1,0 +1,107 @@
+package bullscows;
+
+import java.util.Random;
+import java.util.Scanner;
+
+public class Main {
+    static Scanner scanner = new Scanner(System.in);
+    static int length;
+    static int symbols;
+    static StringBuilder code = new StringBuilder("0123456789abcdefghijklmnopqrstuvwxyz");
+
+    public static void main(String[] args) {
+        game(input());
+    }
+
+    public static String input() {
+        String secretCode = "";
+        System.out.println("Input the length of the secret code:");
+        String stringLength = "";
+        try {
+            stringLength = scanner.nextLine();
+            length = Integer.parseInt(stringLength);
+        } catch (NumberFormatException e) {
+            System.out.printf("Error: \"%s\" isn't a valid number.", stringLength);
+            System.exit(0);
+        }
+        if (length > 36) {
+            System.out.println("Error: maximum number of possible symbols in the code is 36 (0-9, a-z).");
+            System.exit(0);
+        }
+        if (length < 1) {
+            System.out.println("Error minimum length of the word should be 0");
+            System.exit(0);
+        }
+        System.out.println("Input the number of possible symbols in the code:");
+        symbols = scanner.nextInt();
+        if (symbols > 36) {
+            System.out.println("Error: maximum number of possible symbols in the code is 36 (0-9, a-z).");
+            System.exit(0);
+        } else if (length > symbols) {
+            System.out.printf("Error: it's not possible to generate a code with a length of %d with %d unique symbols.\n", length, symbols);
+            System.exit(0);
+        } else {
+            int helpNumber = 1;
+            String helpSymbols;
+            if (symbols < 11) {
+                helpNumber = symbols - helpNumber;
+                System.out.printf("The secret is prepared: %s (0-%d)\n", "*".repeat(length), helpNumber);
+            } else {
+                helpNumber = 9;
+                helpSymbols = String.valueOf(code.charAt(symbols - 1));
+                System.out.printf("The secret is prepared: %s (0-%d, a-%s)\n", "*".repeat(length), helpNumber, helpSymbols);
+            }
+            code.delete(symbols, code.length());
+            secretCode = String.valueOf(secretNumber(length));
+            System.out.println("Okay, let's start a game!");
+        }
+        return secretCode;
+    }
+
+    private static void game(String secretCode) {
+        int turn = 1;
+        boolean nextTurn = true;
+        while (nextTurn) {
+            int bulls = 0;
+            int cows = 0;
+            System.out.printf("Turn %d:\n", turn);
+            String inputCode = scanner.next();
+            if (inputCode.length() == length) {
+                for (int i = 0; i < inputCode.length(); i++) {
+                    if (secretCode.contains(Character.toString(inputCode.charAt(i)))) {
+                        if (secretCode.charAt(i) == inputCode.charAt(i)) {
+                            bulls++;
+                        } else {
+                            cows++;
+                        }
+                    }
+                }
+                if (bulls == length) {
+                    System.out.println("Grade: " + bulls + " bulls\nCongratulations! You guessed the secret code.");
+                    nextTurn = false;
+                } else {
+                    System.out.printf("Grade: %d bull(s) and %d cow(s)\n", bulls, cows);
+                }
+                turn++;
+            } else {
+                System.out.println("Invalid length error");
+            }
+        }
+    }
+
+    private static StringBuilder secretNumber(int length) {
+        StringBuilder secretNumber = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            String temp = randomNumber();
+            secretNumber.append(code.charAt(Integer.parseInt(temp)));
+            code.deleteCharAt(Integer.parseInt(temp));
+        }
+        return secretNumber;
+    }
+
+    private static String randomNumber() {
+        Random random = new Random();
+        int pseudoRandomNumber = random.nextInt(code.length());
+        return String.valueOf(pseudoRandomNumber);
+    }
+}
